@@ -1,7 +1,7 @@
 module Parse where
 
 
-import Compute
+import Types
 
 
 splitComma :: String -> [String]
@@ -15,11 +15,10 @@ splitComma s =
 listToParticleState :: [String] -> ParticleState
 listToParticleState (x:y:vx:vy:[]) = 
   ParticleState 
-    { xPos = read x
-    , yPos = read y
-    , xVel = read vx
-    , yVel = read vy
-    }
+    { pos = p , vel = v }
+    where 
+      p = PosVector { xPos = read x , yPos = read y }
+      v = VelVector { xVel = read vx , yVel = read vy }
 listToParticleState _ = error "mismatched dimensions in file"
 
 
