@@ -9,7 +9,7 @@ import Types
 
 
 totalTime ,steps :: Int
-totalTime = 30
+totalTime = 60
 steps = totalTime * fps
 
 dt :: Float

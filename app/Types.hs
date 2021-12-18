@@ -19,12 +19,29 @@ data VelVector = VelVector
   } deriving Show
 
 
+data Wall = 
+    LeftWall
+  | RightWall
+  | TopWall
+  | BottomWall
+  deriving Show
+
+
 fps, width, height, radius :: Int
-fps = 20
+fps = 100
 width = 500
 height = 500
 radius = 5
 
 
-g :: Float
+rightWallLoc, leftWallLoc, topWallLoc, bottomWallLoc :: Float
+rightWallLoc = fromIntegral $ width `div` 2
+leftWallLoc = negate rightWallLoc
+topWallLoc = fromIntegral $ height `div` 2
+bottomWallLoc = negate topWallLoc
+
+
+g, alpha, beta :: Float
 g = 9.81
+alpha = 0.9
+beta = 0.9
