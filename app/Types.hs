@@ -31,7 +31,7 @@ fps, width, height, radius :: Int
 fps = 100
 width = 500
 height = 500
-radius = 5
+radius = 10
 
 
 rightWallLoc, leftWallLoc, topWallLoc, bottomWallLoc :: Float

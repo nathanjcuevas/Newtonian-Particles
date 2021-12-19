@@ -29,7 +29,7 @@ render (p:_) =
   where 
     getTranslation :: PosVector -> Picture
     getTranslation state = 
-      translate x y $ c $ circleSolid $ fromIntegral $ 2 * radius
+      translate x y $ c $ circleSolid $ fromIntegral radius
         where 
           x = xPos state
           y = yPos state
