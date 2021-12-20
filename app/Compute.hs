@@ -2,6 +2,7 @@ module Compute where
 
 import Types
 import Data.List
+import Debug.Trace
 
 
 createParticleState :: Float -> Float -> Float -> Float -> ParticleState
@@ -63,23 +64,45 @@ adjustForWallBounce pSl = map bounce pSl
 
 collision :: ParticleState -> ParticleState -> (ParticleState, ParticleState)
 collision pS1 pS2
-  | d > 2 * r = (pS1, pS2)
+  | d >= 2 * r = (pS1, pS2)
   | otherwise = (new1, new2)
   where
     r = (fromIntegral radius) :: Float
-    d = sqrt $ ((x2-x1)^ 2) + ((y2-y1)^2)
+    d = sqrt $ (x2-x1)^2 + (y2-y1)^2
     (x1,y1,vx1,vy1) = getParticleData pS1
     (x2,y2,vx2,vy2) = getParticleData pS2
-    power =  0.00482 * ((abs vx1) + (abs vy1) + (abs vx2) + (abs vy2))
-    opposite = y1 - y2
-    adjacent = x1 - x2
-    rotation = atan2 opposite adjacent
-    vel2x = 90 * power * cos (rotation + pi)
-    vel2y = 90 * power * sin (rotation + pi)
-    vel1x = 90 * power * cos rotation
-    vel1y = 90 * power * sin rotation 
-    new1 = createParticleState x1 y1 (vx1 + vel1x) (vy1 + vel1y)
-    new2 = createParticleState x2 y2 (vx2 + vel2x) (vy2 + vel2y)
+    nx = x2 - x1
+    ny = y2 - y1
+    thetaN = posAtan2 ny nx
+    theta1 = posAtan2 vy1 vx1
+    theta2 = posAtan2 vy2 vx2
+    phi1 = theta1 - thetaN
+    phi2 = theta2 - thetaN
+    mag1 = sqrt $ vx1^2 + vy1^2
+    mag2 = sqrt $ vx2^2 + vy2^2
+    vn1 = mag1 * (cos phi1) 
+    vt1 = mag1 * (sin phi1)
+    vn2 = mag2 * (cos phi2)
+    vt2 = mag2 * (sin phi2)
+    vt2' = beta * vt2
+    vt1' = beta * vt1
+    vn1' = alpha * vn2
+    vn2' = alpha * vn1
+    mag1' = sqrt $ vn1'^2 + vt1'^2
+    mag2' = sqrt $ vn2'^2 + vt2'^2
+    phi1' = posAtan2 vt1' vn1'
+    phi2' = posAtan2 vt2' vn2'
+    theta1' = thetaN + phi1'
+    theta2' = thetaN + phi2'
+    angle = posAtan2 ny nx
+    pen = 2 * r - d
+    new1 = createParticleState x1 y1 (mag1' * (cos theta1')) (mag1' * (sin theta1'))
+    new2 = createParticleState (x2 + pen * cos angle) (y2 + pen * sin angle) (mag2' * (cos theta2')) (mag2' * (sin theta2'))
+    posAtan2 :: Float -> Float -> Float
+    posAtan2 y x
+      | res < 0   = 2 * pi + res
+      | otherwise = res
+      where res = atan2 y x
 
 
 adjustForCollisions :: [ParticleState] -> [ParticleState]

@@ -43,5 +43,5 @@ bottomWallLoc = negate topWallLoc
 
 g, alpha, beta :: Float
 g = 9.81
-alpha = 0.9
-beta = 0.9
+alpha = 0.98
+beta = 0.92

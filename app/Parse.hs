@@ -18,7 +18,7 @@ listToParticleState (x:y:vx:vy:[]) =
     where 
       p = PosVector { xPos = read x , yPos = read y }
       v = VelVector { xVel = read vx , yVel = read vy }
-listToParticleState _ = error "mismatched dimensions in file"
+listToParticleState _ = error "mismatched dimensions in data file"
 
 
 contentsToData :: String -> [ParticleState]

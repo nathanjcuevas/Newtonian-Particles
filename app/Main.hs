@@ -2,6 +2,7 @@ module Main where
 
 import System.Environment(getArgs, getProgName)
 import System.Exit(die)
+import Data.Time (getCurrentTime, diffUTCTime)
 import Animate
 import Compute
 import Parse
@@ -9,7 +10,7 @@ import Types
 
 
 totalTime ,steps :: Int
-totalTime = 60
+totalTime = 60 * 15
 steps = totalTime * fps
 
 dt :: Float
@@ -25,24 +26,23 @@ extractPosVectors pSll = map helper pSll
     helper2 pS = pos pS
 
 
-test :: [[PosVector]]
-test = 
-  map helper [0..100 :: Float]
-  where
-    helper :: Float -> [PosVector] 
-    helper d = [PosVector { xPos = 0 , yPos = negate d }]
-
-
 main :: IO ()
 main = 
   do 
     args <- getArgs
-    filename <- 
+    (filename, noplot) <- 
       case args of
-        [f] -> return f
+        [f] -> 
+          return (f, False)
+        [f, "-noplot"] ->
+          return (f, True)
         _   -> 
           do 
             pn <- getProgName
-            die $ "Usage: "++pn++" <filename>"
+            die $ "Usage: "++pn++" <filename> [-noplot]"
     contents <- readFile filename
-    runAnimation $ extractPosVectors $ compute (contentsToData contents) dt steps
+    let vectors = extractPosVectors $ compute (contentsToData contents) dt steps
+    if not noplot then
+      runAnimation vectors
+    else
+      print $ head $ reverse vectors
