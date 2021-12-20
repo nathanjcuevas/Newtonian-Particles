@@ -1,3 +1,5 @@
 notebook/
 dist-newstyle/
 CHANGELOG.md
+*.hi
+*.o
