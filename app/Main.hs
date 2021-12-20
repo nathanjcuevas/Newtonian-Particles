@@ -17,6 +17,10 @@ dt :: Float
 dt = 1 / (fromIntegral fps)
 
 
+configPath :: String
+configPath = "config.csv"
+
+
 extractPosVectors :: [[ParticleState]] -> [[PosVector]]
 extractPosVectors pSll = map helper pSll
   where 
@@ -41,7 +45,11 @@ main =
             pn <- getProgName
             die $ "Usage: "++pn++" <filename> [-noplot]"
     contents <- readFile filename
-    let vectors = extractPosVectors $ compute (contentsToData contents) dt steps
+    configContents <- readFile configPath
+    let 
+      config = extractConfig configContents
+      vectors = extractPosVectors $ compute (contentsToData contents) dt steps config
+      presets = extractConfig configContents
     if not noplot then
       runAnimation vectors
     else

@@ -1,5 +1,6 @@
 module Parse where
 
+import Data.List
 import Types
 
 
@@ -24,3 +25,23 @@ listToParticleState _ = error "mismatched dimensions in data file"
 contentsToData :: String -> [ParticleState]
 contentsToData contents =
   map (listToParticleState . splitComma) $ words contents
+
+
+extractConfig :: String -> Config
+extractConfig contents = 
+  foldl helper defaultConfig $ splitComma contents
+  where
+    helper :: Config -> String -> Config
+    helper c s
+      | isPrefixOf "g=" s     = 
+        c { g = stripPrefixFloat "g=" s }
+      | isPrefixOf "alpha=" s = 
+        c { alpha = stripPrefixFloat "alpha=" s }
+      | isPrefixOf "beta="  s = 
+        c { beta = stripPrefixFloat "beta=" s }
+      | otherwise = error "invalid config file"
+    stripPrefixFloat :: String -> String -> Float
+    stripPrefixFloat prefix s= 
+      case stripPrefix prefix s of 
+        Just post -> read post
+        Nothing   -> error "invalid config file"

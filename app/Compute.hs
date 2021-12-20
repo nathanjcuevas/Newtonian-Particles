@@ -22,14 +22,19 @@ getParticleData pS = (x, y, vx, vy)
     vy = yVel $ vel pS
 
 
-updateState ::  Float -> ParticleState -> ParticleState
-updateState dt prevState = createParticleState xNew yNew vxNew vyNew
+getConfigData :: Config -> (Float, Float, Float)
+getConfigData cG = (g cG, alpha cG, beta cG)
+
+
+updateState ::  Float -> Config -> ParticleState -> ParticleState
+updateState dt cG prevState = createParticleState xNew yNew vxNew vyNew
   where 
     (xPrev, yPrev, vxPrev, vyPrev) = getParticleData prevState
     xNew = xPrev + vxNew * dt
     yNew = yPrev + vyNew * dt
     vxNew = vxPrev
     vyNew = vyPrev - g * dt
+    (g, _, _) = getConfigData cG
 
 
 inWall :: Float -> Float -> Maybe Wall
@@ -42,8 +47,8 @@ inWall x y
   where r = (fromIntegral radius) :: Float
 
 
-adjustForWallBounce :: [ParticleState] -> [ParticleState]
-adjustForWallBounce pSl = map bounce pSl
+adjustForWallBounce :: [ParticleState] -> Config -> [ParticleState]
+adjustForWallBounce pSl cG = map bounce pSl
   where 
     bounce :: ParticleState -> ParticleState
     bounce pS =
@@ -59,14 +64,16 @@ adjustForWallBounce pSl = map bounce pSl
         Nothing         -> pS
       where
       (x, y, vx, vy) = getParticleData pS
+      (_, alpha, beta) = getConfigData cG
       r = (fromIntegral radius) :: Float
 
 
-collision :: ParticleState -> ParticleState -> (ParticleState, ParticleState)
-collision pS1 pS2
+collision :: ParticleState -> ParticleState -> Config -> (ParticleState, ParticleState)
+collision pS1 pS2 cG
   | d >= 2 * r = (pS1, pS2)
   | otherwise = (new1, new2)
   where
+    (_, alpha, beta) = getConfigData cG
     r = (fromIntegral radius) :: Float
     d = sqrt $ (x2-x1)^2 + (y2-y1)^2
     (x1,y1,vx1,vy1) = getParticleData pS1
@@ -105,28 +112,28 @@ collision pS1 pS2
       where res = atan2 y x
 
 
-adjustForCollisions :: [ParticleState] -> [ParticleState]
-adjustForCollisions (pS1:[]) = [pS1]
-adjustForCollisions (pS1:rem) = pS1New:(adjustForCollisions remNew)
+adjustForCollisions :: [ParticleState] -> Config -> [ParticleState]
+adjustForCollisions (pS1:[])  _  = [pS1]
+adjustForCollisions (pS1:rem) cG = pS1New:(adjustForCollisions remNew cG)
   where
     (pS1New, remNew) = helper pS1 rem
     helper :: ParticleState -> [ParticleState] -> (ParticleState, [ParticleState])
     helper pS [] = (pS, [])
     helper pS (x:xs) = (a, newX : r)
       where
-        (newPS, newX) = collision pS x
+        (newPS, newX) = collision pS x cG
         (a, r) = helper newPS xs
 
 
-nextStep :: Float -> [[ParticleState]] -> Int -> [[ParticleState]]
-nextStep dt matrix@(currStates:_) step = result : matrix
+nextStep :: Float -> Config -> [[ParticleState]] -> Int -> [[ParticleState]]
+nextStep dt config matrix@(currStates:_) step = result : matrix
   where
     result, postCollisions, stepped :: [ParticleState]
-    postCollisions = adjustForCollisions currStates
-    stepped = map (updateState dt) postCollisions
-    result = adjustForWallBounce stepped
+    postCollisions = adjustForCollisions currStates config
+    stepped = map (updateState dt config) postCollisions
+    result = adjustForWallBounce stepped config
 
 
-compute :: [ParticleState] -> Float -> Int -> [[ParticleState]]
-compute initial dt nSteps = 
-  reverse $ foldl (nextStep dt) [initial] [1..nSteps]
+compute :: [ParticleState] -> Float -> Int -> Config -> [[ParticleState]]
+compute initial dt nSteps config = 
+  reverse $ foldl (nextStep dt config) [initial] [1..nSteps]

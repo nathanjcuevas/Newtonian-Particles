@@ -27,6 +27,18 @@ data Wall =
   deriving Show
 
 
+data Config = Config
+  { g     :: Float
+  , alpha :: Float
+  , beta  :: Float
+  } deriving Show
+
+
+defaultConfig :: Config
+defaultConfig = 
+  Config { g = 9.81, alpha = 0.93, beta = 0.98 }
+
+
 fps, width, height, radius :: Int
 fps = 100
 width = 500
@@ -40,8 +52,3 @@ leftWallLoc = negate rightWallLoc
 topWallLoc = fromIntegral $ height `div` 2
 bottomWallLoc = negate topWallLoc
 
-
-g, alpha, beta :: Float
-g = 9.81
-alpha = 0.98
-beta = 0.92
