@@ -31,8 +31,8 @@ render (p:_) =
     getTranslation state = 
       translate x y $ c $ circleSolid $ fromIntegral radius
         where 
-          x = xPos state
-          y = yPos state
+          x = xComp state
+          y = yComp state
           c = color red
 
 

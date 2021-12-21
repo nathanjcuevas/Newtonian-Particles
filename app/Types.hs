@@ -2,20 +2,16 @@ module Types where
 
 
 data ParticleState = ParticleState
-  { pos :: PosVector
-  , vel :: VelVector
+  { xPos :: !Float 
+  , yPos :: !Float 
+  , xVel :: !Float
+  , yVel :: !Float
   } deriving Show
 
 
 data PosVector = PosVector
-  { xPos :: Float 
-  , yPos :: Float 
-  } deriving Show
-
-
-data VelVector = VelVector
-  { xVel :: Float 
-  , yVel :: Float 
+  { xComp :: !Float
+  , yComp :: !Float
   } deriving Show
 
 
@@ -28,9 +24,9 @@ data Wall =
 
 
 data Config = Config
-  { g     :: Float
-  , alpha :: Float
-  , beta  :: Float
+  { g     :: !Float
+  , alpha :: !Float
+  , beta  :: !Float
   } deriving Show
 
 

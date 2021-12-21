@@ -23,7 +23,7 @@ extractPosVectors pSll = map helper pSll
     helper :: [ParticleState] -> [PosVector]
     helper pSl = map helper2 pSl
     helper2 :: ParticleState -> PosVector
-    helper2 pS = pos pS
+    helper2 pS = PosVector (xPos pS) (yPos pS)
 
 
 main :: IO ()

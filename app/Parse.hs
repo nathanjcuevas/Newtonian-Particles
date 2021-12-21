@@ -14,11 +14,7 @@ splitComma s =
 
 listToParticleState :: [String] -> ParticleState
 listToParticleState (x:y:vx:vy:[]) = 
-  ParticleState 
-    { pos = p , vel = v }
-    where 
-      p = PosVector { xPos = read x , yPos = read y }
-      v = VelVector { xVel = read vx , yVel = read vy }
+  ParticleState (read x) (read y) (read vx) (read vy)
 listToParticleState _ = error "mismatched dimensions in data file"
 
 

@@ -5,21 +5,8 @@ import Data.List
 import Debug.Trace
 
 
-createParticleState :: Float -> Float -> Float -> Float -> ParticleState
-createParticleState x y vx vy =
-  ParticleState
-    { pos = PosVector { xPos = x , yPos = y}
-    , vel = VelVector { xVel = vx , yVel = vy}
-    }
-
-
 getParticleData :: ParticleState -> (Float, Float, Float, Float)
-getParticleData pS = (x, y, vx, vy)
-  where
-    x = xPos $ pos pS
-    y = yPos $ pos pS
-    vx = xVel $ vel pS
-    vy = yVel $ vel pS
+getParticleData pS = (xPos pS, yPos pS, xVel pS, yVel pS)
 
 
 getConfigData :: Config -> (Float, Float, Float)
@@ -27,7 +14,7 @@ getConfigData cG = (g cG, alpha cG, beta cG)
 
 
 updateState ::  Float -> Config -> ParticleState -> ParticleState
-updateState dt cG prevState = createParticleState xNew yNew vxNew vyNew
+updateState dt cG prevState = ParticleState xNew yNew vxNew vyNew
   where 
     (xPrev, yPrev, vxPrev, vyPrev) = getParticleData prevState
     xNew = xPrev + vxNew * dt
@@ -54,13 +41,13 @@ adjustForWallBounce pSl cG = map bounce pSl
     bounce pS =
       case inWall x y of
         Just LeftWall   -> 
-          createParticleState (x+2*(leftWallLoc-x+r)) y (alpha*(negate vx)) (beta*vy)
+          ParticleState (x+2*(leftWallLoc-x+r)) y (alpha*(negate vx)) (beta*vy)
         Just RightWall  ->
-          createParticleState (x-2*(x+r-rightWallLoc)) y (alpha*(negate vx)) (beta*vy)
+          ParticleState (x-2*(x+r-rightWallLoc)) y (alpha*(negate vx)) (beta*vy)
         Just TopWall    ->
-          createParticleState x (y-2*(y+r-topWallLoc)) (beta*vx) (alpha*(negate vy))
+          ParticleState x (y-2*(y+r-topWallLoc)) (beta*vx) (alpha*(negate vy))
         Just BottomWall ->
-          createParticleState x (y+2*(bottomWallLoc-y+r)) (beta*vx) (alpha*(negate vy))
+          ParticleState x (y+2*(bottomWallLoc-y+r)) (beta*vx) (alpha*(negate vy))
         Nothing         -> pS
       where
       (x, y, vx, vy) = getParticleData pS
@@ -103,8 +90,8 @@ collision pS1 pS2 cG
     theta2' = thetaN + phi2'
     angle = posAtan2 ny nx
     pen = 2 * r - d
-    new1 = createParticleState x1 y1 (mag1' * (cos theta1')) (mag1' * (sin theta1'))
-    new2 = createParticleState (x2 + pen * cos angle) (y2 + pen * sin angle) (mag2' * (cos theta2')) (mag2' * (sin theta2'))
+    new1 = ParticleState x1 y1 (mag1' * (cos theta1')) (mag1' * (sin theta1'))
+    new2 = ParticleState (x2 + pen * cos angle) (y2 + pen * sin angle) (mag2' * (cos theta2')) (mag2' * (sin theta2'))
     posAtan2 :: Float -> Float -> Float
     posAtan2 y x
       | res < 0   = 2 * pi + res
