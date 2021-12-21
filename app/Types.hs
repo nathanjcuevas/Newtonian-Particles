@@ -1,4 +1,5 @@
 module Types where
+import Control.DeepSeq
 
 
 data ParticleState = ParticleState
@@ -7,6 +8,11 @@ data ParticleState = ParticleState
   , xVel :: !Float
   , yVel :: !Float
   } deriving Show
+
+
+instance NFData ParticleState where
+  rnf (ParticleState x' y' vx' vy') =
+    rnf x' `seq` rnf y' `seq` rnf vx' `seq` rnf vy'
 
 
 data PosVector = PosVector

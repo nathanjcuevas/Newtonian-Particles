@@ -4,3 +4,4 @@ CHANGELOG.md
 *.hi
 *.o
 Main
+*.eventlog

@@ -44,9 +44,8 @@ main =
     configContents <- readFile configPath
     let 
       config = extractConfig configContents
-      vectors = extractPosVectors $ compute (contentsToData contents) dt steps config
-      presets = extractConfig configContents
+      preset = contentsToData contents
     if animate then
-      runAnimation vectors
+      runAnimation $ extractPosVectors $ computeMatrix preset dt steps config
     else
-      print $ head $ reverse vectors
+      print $ compute preset dt steps config

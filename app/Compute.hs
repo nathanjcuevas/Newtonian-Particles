@@ -3,6 +3,8 @@ module Compute where
 import Types
 import Data.List
 import Debug.Trace
+import Control.Parallel.Strategies
+import Control.DeepSeq
 
 
 getParticleData :: ParticleState -> (Float, Float, Float, Float)
@@ -14,12 +16,10 @@ getConfigData cG = (g cG, alpha cG, beta cG)
 
 
 updateState ::  Float -> Config -> ParticleState -> ParticleState
-updateState dt cG prevState = ParticleState xNew yNew vxNew vyNew
+updateState dt cG prevState = 
+  prevState {xPos = xPrev + vxPrev * dt, yPos = yPrev + vyNew * dt, yVel = vyNew}
   where 
     (xPrev, yPrev, vxPrev, vyPrev) = getParticleData prevState
-    xNew = xPrev + vxNew * dt
-    yNew = yPrev + vyNew * dt
-    vxNew = vxPrev
     vyNew = vyPrev - g * dt
     (g, _, _) = getConfigData cG
 
@@ -112,15 +112,23 @@ adjustForCollisions (pS1:rem) cG = pS1New:(adjustForCollisions remNew cG)
         (a, r) = helper newPS xs
 
 
-nextStep :: Float -> Config -> [[ParticleState]] -> Int -> [[ParticleState]]
-nextStep dt config matrix@(currStates:_) step = result : matrix
+nextStep :: Float -> Config -> [ParticleState] -> Int -> [ParticleState]
+nextStep dt config currStates step = result
   where
     result, postCollisions, stepped :: [ParticleState]
     postCollisions = adjustForCollisions currStates config
-    stepped = map (updateState dt config) postCollisions
-    result = adjustForWallBounce stepped config
+    stepped = map (updateState dt config) postCollisions `using` parList rseq
+    result = force $ adjustForWallBounce stepped config
 
 
-compute :: [ParticleState] -> Float -> Int -> Config -> [[ParticleState]]
+compute :: [ParticleState] -> Float -> Int -> Config -> [ParticleState]
 compute initial dt nSteps config = 
-  reverse $ foldl (nextStep dt config) [initial] [1..nSteps]
+  foldl (nextStep dt config) initial [1..nSteps]
+
+
+computeMatrix :: [ParticleState] -> Float -> Int -> Config -> [[ParticleState]]
+computeMatrix initial dt nSteps config = 
+  reverse $ foldl helper [initial] [1..nSteps]
+    where
+      helper :: [[ParticleState]] -> Int -> [[ParticleState]]
+      helper matrix@(front:_) step = (nextStep dt config front step) : matrix
