@@ -136,6 +136,21 @@ adjustForCollisions2 pSl cG = map helper pSl
             where (first, _) = collision pS e cG
 
 
+adjustForCollisions2Chunked :: [ParticleState] -> Config -> Int -> [ParticleState]
+adjustForCollisions2Chunked pSl cG numChunks = concat $ map (map helper) splitted
+  where
+    splitted = split numChunks pSl
+    helper :: ParticleState -> ParticleState
+    helper pS = foldl helper2 pS pSl
+      where
+        helper2 :: ParticleState -> ParticleState -> ParticleState
+        helper2 s e
+          | e == pS     = s
+          | first == pS = s
+          | otherwise   = first
+            where (first, _) = collision pS e cG
+
+
 nextStep :: Float -> Config -> [ParticleState] -> Int -> [ParticleState]
 nextStep dt config currStates step = force $ adjustForWallBounce stepped config
   where
@@ -162,11 +177,19 @@ nextStepChunkedDeep_strat dt config numChunks currStates step =
       postCollisions = adjustForCollisions currStates config
       splitted = split numChunks postCollisions
       stepped = concat (map (map (updateState dt config)) splitted `using` parList rdeepseq)
+
+
+nextStepParCollision :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
+nextStepParCollision dt config numChunks currStates step = force $ adjustForWallBounce stepped config
+  where
+    postCollisions, stepped :: [ParticleState]
+    postCollisions = adjustForCollisions2Chunked currStates config numChunks
+    stepped = map (updateState dt config) postCollisions
       
 
 compute :: [ParticleState] -> Float -> Int -> Config -> [ParticleState]
 compute initial dt nSteps config = 
-  foldl (nextStep dt config) initial [1..nSteps]
+  foldl (nextStepParCollision dt config 50) initial [1..nSteps]
 
 
 computeMatrix :: [ParticleState] -> Float -> Int -> Config -> [[ParticleState]]

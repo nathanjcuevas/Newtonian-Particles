@@ -15,6 +15,14 @@ instance NFData ParticleState where
     rnf x' `seq` rnf y' `seq` rnf vx' `seq` rnf vy'
 
 
+instance Eq ParticleState where
+  pS1 == pS2 = 
+    (xPos pS1 == xPos pS2) &&
+    (yPos pS1 == yPos pS2) &&
+    (xVel pS1 == xVel pS2) &&
+    (yVel pS1 == yVel pS2)
+
+
 data PosVector = PosVector
   { xComp :: !Float
   , yComp :: !Float
