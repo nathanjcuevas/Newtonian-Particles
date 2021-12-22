@@ -137,7 +137,7 @@ adjustForCollisions2 pSl cG = map helper pSl
 
 
 adjustForCollisions2Chunked :: [ParticleState] -> Config -> Int -> [ParticleState]
-adjustForCollisions2Chunked pSl cG numChunks = concat $ map (map helper) splitted
+adjustForCollisions2Chunked pSl cG numChunks = concat (map (map helper) splitted `using` parList rdeepseq)
   where
     splitted = split numChunks pSl
     helper :: ParticleState -> ParticleState
