@@ -99,6 +99,16 @@ collision pS1 pS2 cG
       where res = atan2 y x
 
 
+split :: Int -> [a] -> [[a]]
+split numChunks xs = chunk (length xs `quot` numChunks) xs
+    
+
+chunk :: Int -> [a] -> [[a]] 
+chunk n [] = []
+chunk n xs = as : chunk n bs
+  where (as,bs) = splitAt n xs
+
+
 adjustForCollisions :: [ParticleState] -> Config -> [ParticleState]
 adjustForCollisions (pS1:[])  _  = [pS1]
 adjustForCollisions (pS1:rem) cG = pS1New:(adjustForCollisions remNew cG)
@@ -113,17 +123,48 @@ adjustForCollisions (pS1:rem) cG = pS1New:(adjustForCollisions remNew cG)
 
 
 nextStep :: Float -> Config -> [ParticleState] -> Int -> [ParticleState]
+nextStep dt config currStates step = force $ adjustForWallBounce stepped config
+  where
+    postCollisions, stepped :: [ParticleState]
+    postCollisions = adjustForCollisions currStates config
+    stepped = map (updateState dt config) postCollisions
+
+{-
+nextStep :: Float -> Config -> [ParticleState] -> Int -> [ParticleState]
 nextStep dt config currStates step = result
   where
-    result, postCollisions, stepped :: [ParticleState]
     postCollisions = adjustForCollisions currStates config
-    stepped = map (updateState dt config) postCollisions `using` parList rseq
-    result = force $ adjustForWallBounce stepped config
+    (arr1, arr4) = splitAt 25 postCollisions
+    (arr2, arr3) = splitAt 25 arr4
+    arrs = foldl (++) [] [ map (updateState dt config) arr1
+                         , map (updateState dt config) arr2
+                         , map (updateState dt config) arr3] `using` parList rseq
+    result = force $ adjustForWallBounce arrs config
+-}
 
+nextStepChunkedForce_strat :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
+nextStepChunkedForce_strat dt config numChunks currStates step = 
+  force $ adjustForWallBounce stepped config
+    where
+      postCollisions, stepped :: [ParticleState]
+      postCollisions = adjustForCollisions currStates config
+      splitted = split numChunks postCollisions
+      stepped = concat (map (map (updateState dt config)) splitted `using` parList rseq)
+
+
+nextStepChunkedDeep_strat :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
+nextStepChunkedDeep_strat dt config numChunks currStates step = 
+  adjustForWallBounce stepped config
+    where
+      postCollisions, stepped :: [ParticleState]
+      postCollisions = adjustForCollisions currStates config
+      splitted = split numChunks postCollisions
+      stepped = concat (map (map (updateState dt config)) splitted `using` parList rdeepseq)
+      
 
 compute :: [ParticleState] -> Float -> Int -> Config -> [ParticleState]
 compute initial dt nSteps config = 
-  foldl (nextStep dt config) initial [1..nSteps]
+  foldl (nextStepChunkedDeep_strat dt config 7) initial [1..nSteps]
 
 
 computeMatrix :: [ParticleState] -> Float -> Int -> Config -> [[ParticleState]]

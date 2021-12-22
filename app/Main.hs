@@ -9,9 +9,10 @@ import Parse
 import Types
 
 
-totalTime ,steps :: Int
-totalTime = 60 * 15
+totalTime ,steps, maxSize :: Int
+totalTime = 60
 steps = totalTime * fps
+maxSize = 7000000
 
 dt :: Float
 dt = 1 / (fromIntegral fps)
@@ -45,7 +46,10 @@ main =
     let 
       config = extractConfig configContents
       preset = contentsToData contents
-    if animate then
+      m = length preset
+    if steps * m > maxSize then
+      error "exceeded max size"
+    else if animate then
       runAnimation $ extractPosVectors $ computeMatrix preset dt steps config
     else
       print $ compute preset dt steps config

@@ -42,10 +42,10 @@ defaultConfig =
 
 
 fps, width, height, radius :: Int
-fps = 100
-width = 500
-height = 500
-radius = 10
+fps = 45
+width = 740
+height = 740
+radius = 3
 
 
 rightWallLoc, leftWallLoc, topWallLoc, bottomWallLoc :: Float

@@ -27,6 +27,6 @@ executable Newtonian-Particles
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:    base ^>=4.14.3.0, gloss, deepseq, time
+    build-depends:    base ^>=4.14.3.0, gloss, deepseq, time, parallel
     hs-source-dirs:   app
     default-language: Haskell2010

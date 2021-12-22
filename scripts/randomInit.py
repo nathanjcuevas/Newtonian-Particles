@@ -6,10 +6,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--n', default=10, help = 'poll for test')
 args = parser.parse_args()
 
-dmin = -225
-dmax = 225
-vmin = -120
-vmax = 120
+dmin = -355
+dmax = 355
+vmin = -200
+vmax = 200
 
 n = int(args.n)
 
