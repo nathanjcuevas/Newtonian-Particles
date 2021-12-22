@@ -122,6 +122,20 @@ adjustForCollisions (pS1:rem) cG = pS1New:(adjustForCollisions remNew cG)
         (a, r) = helper newPS xs
 
 
+adjustForCollisions2 :: [ParticleState] -> Config -> [ParticleState]
+adjustForCollisions2 pSl cG = map helper pSl
+  where
+    helper :: ParticleState -> ParticleState
+    helper pS = foldl helper2 pS pSl
+      where
+        helper2 :: ParticleState -> ParticleState -> ParticleState
+        helper2 s e
+          | e == pS     = s
+          | first == pS = s
+          | otherwise   = first
+            where (first, _) = collision pS e cG
+
+
 nextStep :: Float -> Config -> [ParticleState] -> Int -> [ParticleState]
 nextStep dt config currStates step = force $ adjustForWallBounce stepped config
   where
@@ -129,18 +143,6 @@ nextStep dt config currStates step = force $ adjustForWallBounce stepped config
     postCollisions = adjustForCollisions currStates config
     stepped = map (updateState dt config) postCollisions
 
-{-
-nextStep :: Float -> Config -> [ParticleState] -> Int -> [ParticleState]
-nextStep dt config currStates step = result
-  where
-    postCollisions = adjustForCollisions currStates config
-    (arr1, arr4) = splitAt 25 postCollisions
-    (arr2, arr3) = splitAt 25 arr4
-    arrs = foldl (++) [] [ map (updateState dt config) arr1
-                         , map (updateState dt config) arr2
-                         , map (updateState dt config) arr3] `using` parList rseq
-    result = force $ adjustForWallBounce arrs config
--}
 
 nextStepChunkedForce_strat :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
 nextStepChunkedForce_strat dt config numChunks currStates step = 
@@ -164,7 +166,7 @@ nextStepChunkedDeep_strat dt config numChunks currStates step =
 
 compute :: [ParticleState] -> Float -> Int -> Config -> [ParticleState]
 compute initial dt nSteps config = 
-  foldl (nextStepChunkedDeep_strat dt config 7) initial [1..nSteps]
+  foldl (nextStep dt config) initial [1..nSteps]
 
 
 computeMatrix :: [ParticleState] -> Float -> Int -> Config -> [[ParticleState]]
