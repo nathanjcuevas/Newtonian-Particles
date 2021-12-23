@@ -52,6 +52,10 @@ adjustForWallBounce pSl cG = map bounce pSl
       (lWall, rWall, tWall, bWall) = getWallLocs cG
 
 
+hyp :: Float -> Float -> Float
+hyp a b = sqrt $ a * a + b * b
+
+
 collision :: ParticleState -> ParticleState -> Config -> (ParticleState, ParticleState)
 collision pS1 pS2 cG
   | d >= 2 * r = (pS1, pS2)
@@ -59,41 +63,31 @@ collision pS1 pS2 cG
   where
     (al, be) = (alpha cG, beta cG)
     r = (fromIntegral (radius cG)) :: Float
-    d = sqrt $ (x2-x1)^2 + (y2-y1)^2
+    d = hyp (x2-x1) (y2-y1)
     (x1,y1,vx1,vy1) = getParticleData pS1
     (x2,y2,vx2,vy2) = getParticleData pS2
-    nx = x2 - x1
-    ny = y2 - y1
-    thetaN = posAtan2 ny nx
-    theta1 = posAtan2 vy1 vx1
-    theta2 = posAtan2 vy2 vx2
-    phi1 = theta1 - thetaN
-    phi2 = theta2 - thetaN
-    mag1 = sqrt $ vx1^2 + vy1^2
-    mag2 = sqrt $ vx2^2 + vy2^2
-    vn1 = mag1 * (cos phi1) 
-    vt1 = mag1 * (sin phi1)
-    vn2 = mag2 * (cos phi2)
-    vt2 = mag2 * (sin phi2)
-    vt2' = be * vt2
-    vt1' = be * vt1
-    vn1' = al * vn2
-    vn2' = al * vn1
-    mag1' = sqrt $ vn1'^2 + vt1'^2
-    mag2' = sqrt $ vn2'^2 + vt2'^2
-    phi1' = posAtan2 vt1' vn1'
-    phi2' = posAtan2 vt2' vn2'
-    theta1' = thetaN + phi1'
-    theta2' = thetaN + phi2'
-    angle = posAtan2 ny nx
+    v1 = (vx1, vy1)
+    v2 = (vx2, vy2)
+    n = (x2 - x1, y2 - y1)
+    thetaN = posAtan2 n
+    v1trans = transform (vx1, vy1) ((posAtan2 v1) - thetaN)
+    v2trans = transform (vx2, vy2) ((posAtan2 v2) - thetaN)
+    (v1trans', v2trans') = momentumTransfer v1trans v2trans
+    (vx1', vy1') = transform v1trans' (thetaN + posAtan2 v1trans')
+    (vx2', vy2') = transform v2trans' (thetaN + posAtan2 v2trans')
     pen = 2 * r - d
-    new1 = ParticleState x1 y1 (mag1' * (cos theta1')) (mag1' * (sin theta1'))
-    new2 = ParticleState (x2 + pen * cos angle) (y2 + pen * sin angle) (mag2' * (cos theta2')) (mag2' * (sin theta2'))
-    posAtan2 :: Float -> Float -> Float
-    posAtan2 y x
+    new1 = ParticleState x1 y1 vx1' vy1'
+    new2 = ParticleState (x2 + pen * cos thetaN) (y2 + pen * sin thetaN) vx2' vy2'
+    posAtan2 :: (Float, Float) -> Float
+    posAtan2 (x, y)
       | res < 0   = 2 * pi + res
       | otherwise = res
       where res = atan2 y x
+    transform :: (Float, Float) -> Float -> (Float, Float)
+    transform (x, y) phi = (mag * (cos phi), mag * (sin phi))
+      where mag = hyp x y
+    momentumTransfer :: (Float, Float) -> (Float, Float) -> ((Float, Float), (Float, Float))
+    momentumTransfer (vn1, vt1) (vn2, vt2) = ((al * vn2, be * vt1), (al * vn1, be * vt2))
 
 
 split :: Int -> [a] -> [[a]]
@@ -101,7 +95,7 @@ split numChunks xs = chunk (length xs `quot` numChunks) xs
     
 
 chunk :: Int -> [a] -> [[a]] 
-chunk n [] = []
+chunk _ [] = []
 chunk n xs = as : chunk n bs
   where (as,bs) = splitAt n xs
 
@@ -109,9 +103,9 @@ chunk n xs = as : chunk n bs
 adjustForCollisions :: [ParticleState] -> Config -> [ParticleState]
 adjustForCollisions [] _         = []
 adjustForCollisions (pS1:[])  _  = [pS1]
-adjustForCollisions (pS1:rem) cG = pS1New:(adjustForCollisions remNew cG)
+adjustForCollisions (pS1:end) cG = pS1New:(adjustForCollisions endNew cG)
   where
-    (pS1New, remNew) = helper pS1 rem
+    (pS1New, endNew) = helper pS1 end
     helper :: ParticleState -> [ParticleState] -> (ParticleState, [ParticleState])
     helper pS [] = (pS, [])
     helper pS (x:xs) = (a, newX : r)
@@ -150,7 +144,7 @@ adjustForCollisions2Chunked pSl cG numChunks = concat (map (map helper) splitted
 
 
 nextStep :: Float -> Config -> [ParticleState] -> Int -> [ParticleState]
-nextStep dt config currStates step = force $ adjustForWallBounce stepped config
+nextStep dt config currStates _ = force $ adjustForWallBounce stepped config
   where
     postCollisions, stepped :: [ParticleState]
     postCollisions = adjustForCollisions currStates config
@@ -158,7 +152,7 @@ nextStep dt config currStates step = force $ adjustForWallBounce stepped config
 
 
 nextStepChunkedForce :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
-nextStepChunkedForce dt config numChunks currStates step = 
+nextStepChunkedForce dt config numChunks currStates _ = 
   force $ adjustForWallBounce stepped config
     where
       postCollisions, stepped :: [ParticleState]
@@ -168,7 +162,7 @@ nextStepChunkedForce dt config numChunks currStates step =
 
 
 nextStepChunkedDeep :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
-nextStepChunkedDeep dt config numChunks currStates step = 
+nextStepChunkedDeep dt config numChunks currStates _ = 
   adjustForWallBounce stepped config
     where
       postCollisions, stepped :: [ParticleState]
@@ -178,7 +172,7 @@ nextStepChunkedDeep dt config numChunks currStates step =
 
 
 nextStepParCollision :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
-nextStepParCollision dt config numChunks currStates step = force $ adjustForWallBounce stepped config
+nextStepParCollision dt config numChunks currStates _ = force $ adjustForWallBounce stepped config
   where
     postCollisions, stepped :: [ParticleState]
     postCollisions = adjustForCollisions2Chunked currStates config numChunks

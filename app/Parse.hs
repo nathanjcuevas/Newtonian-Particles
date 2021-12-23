@@ -8,7 +8,7 @@ splitComma :: String -> [String]
 splitComma s = 
   case span (/= ',') s of
     (start , "")      -> [start]
-    (start , ',':rem) -> start:(splitComma rem)
+    (start , ',':end) -> start:(splitComma end)
     _                 -> error "parse error in splitComma"
 
 
