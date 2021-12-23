@@ -2,7 +2,6 @@ module Main where
 
 import System.Environment(getArgs, getProgName)
 import System.Exit(die)
-import Data.Time (getCurrentTime, diffUTCTime)
 import Animate
 import Compute
 import Parse

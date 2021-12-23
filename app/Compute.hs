@@ -1,8 +1,6 @@
 module Compute where
 
 import Types
-import Data.List
-import Debug.Trace
 import Control.Parallel.Strategies
 import Control.DeepSeq
 
@@ -110,6 +108,7 @@ chunk n xs = as : chunk n bs
 
 
 adjustForCollisions :: [ParticleState] -> Config -> [ParticleState]
+adjustForCollisions [] _         = []
 adjustForCollisions (pS1:[])  _  = [pS1]
 adjustForCollisions (pS1:rem) cG = pS1New:(adjustForCollisions remNew cG)
   where
@@ -198,3 +197,4 @@ computeMatrix initial dt nSteps config =
     where
       helper :: [[ParticleState]] -> Int -> [[ParticleState]]
       helper matrix@(front:_) step = (nextStep dt config front step) : matrix
+      helper _ _ = error "computeMatrix helper error"
