@@ -9,8 +9,9 @@ offset :: Int
 offset = 100
 
 
-window :: Display
-window = InWindow "Particles" (width, height) (offset, offset)
+getWindowFromConfig :: Config -> Display
+getWindowFromConfig c = 
+  InWindow "Particles" (width c, height c) (offset, offset)
 
 
 background :: Color
@@ -22,19 +23,21 @@ update _ _ []     = []
 update _ _ (_:ps) = ps
 
 
-render :: [[PosVector]] -> Picture
-render []    = blank   -- when the simulation is done, show a blank screen
-render (p:_) = 
+render :: Config -> [[PosVector]] -> Picture
+render _  []    = blank   -- when the simulation is done, show a blank screen
+render cG (p:_) = 
   pictures $ map getTranslation p
   where 
     getTranslation :: PosVector -> Picture
     getTranslation state = 
-      translate x y $ c $ circleSolid $ fromIntegral radius
+      translate x y $ c $ circleSolid r
         where 
           x = xComp state
           y = yComp state
           c = color red
+          r = fromIntegral $ radius cG
 
 
-runAnimation :: [[PosVector]] -> IO ()
-runAnimation ds = simulate window background fps ds render update
+runAnimation :: [[PosVector]] -> Config -> IO ()
+runAnimation ds cG = 
+  simulate (getWindowFromConfig cG) background (fps cG) ds (render cG) update

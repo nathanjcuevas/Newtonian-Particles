@@ -35,8 +35,18 @@ extractConfig contents =
         c { alpha = stripPrefixFloat "alpha=" s }
       | isPrefixOf "beta="  s = 
         c { beta = stripPrefixFloat "beta=" s }
-      | otherwise = error "invalid config file"
-    stripPrefixFloat :: String -> String -> Float
+      | isPrefixOf "width="  s = 
+        c { width = stripPrefixFloat "width=" s }
+      | isPrefixOf "height="  s = 
+        c { height = stripPrefixFloat "height=" s }
+      | isPrefixOf "radius="  s = 
+        c { radius = stripPrefixFloat "radius=" s }
+      | isPrefixOf "fps="  s = 
+        c { fps = stripPrefixFloat "fps=" s }
+      | isPrefixOf "totTime="  s = 
+        c { totTime = stripPrefixFloat "totTime=" s }
+      | otherwise = c
+    stripPrefixFloat :: Read a => String -> String -> a
     stripPrefixFloat prefix s= 
       case stripPrefix prefix s of 
         Just post -> read post

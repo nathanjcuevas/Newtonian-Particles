@@ -9,27 +9,25 @@ getParticleData :: ParticleState -> (Float, Float, Float, Float)
 getParticleData pS = (xPos pS, yPos pS, xVel pS, yVel pS)
 
 
-getConfigData :: Config -> (Float, Float, Float)
-getConfigData cG = (g cG, alpha cG, beta cG)
-
-
 updateState ::  Float -> Config -> ParticleState -> ParticleState
 updateState dt cG prevState = 
   prevState {xPos = xPrev + vxPrev * dt, yPos = yPrev + vyNew * dt, yVel = vyNew}
   where 
     (xPrev, yPrev, vxPrev, vyPrev) = getParticleData prevState
-    vyNew = vyPrev - g * dt
-    (g, _, _) = getConfigData cG
+    vyNew = vyPrev - gr * dt
+    gr = g cG
 
 
-inWall :: Float -> Float -> Maybe Wall
-inWall x y
-  | x - r < leftWallLoc   = Just LeftWall
-  | x + r > rightWallLoc  = Just RightWall
-  | y + r > topWallLoc    = Just TopWall
-  | y - r < bottomWallLoc = Just BottomWall
+inWall :: Float -> Float -> Config -> Maybe Wall
+inWall x y cG
+  | x - r < lWall = Just LeftWall 
+  | x + r > rWall = Just RightWall
+  | y + r > tWall = Just TopWall
+  | y - r < bWall = Just BottomWall
   | otherwise = Nothing
-  where r = (fromIntegral radius) :: Float
+  where 
+    r = fromIntegral (radius cG) :: Float
+    (lWall, rWall, tWall, bWall) = getWallLocs cG
 
 
 adjustForWallBounce :: [ParticleState] -> Config -> [ParticleState]
@@ -37,20 +35,21 @@ adjustForWallBounce pSl cG = map bounce pSl
   where 
     bounce :: ParticleState -> ParticleState
     bounce pS =
-      case inWall x y of
+      case inWall x y cG of
         Just LeftWall   -> 
-          ParticleState (x+2*(leftWallLoc-x+r)) y (alpha*(negate vx)) (beta*vy)
+          ParticleState (x+2*(lWall-x+r)) y (al*(negate vx)) (be*vy)
         Just RightWall  ->
-          ParticleState (x-2*(x+r-rightWallLoc)) y (alpha*(negate vx)) (beta*vy)
+          ParticleState (x-2*(x+r-rWall)) y (al*(negate vx)) (be*vy)
         Just TopWall    ->
-          ParticleState x (y-2*(y+r-topWallLoc)) (beta*vx) (alpha*(negate vy))
+          ParticleState x (y-2*(y+r-tWall)) (be*vx) (al*(negate vy))
         Just BottomWall ->
-          ParticleState x (y+2*(bottomWallLoc-y+r)) (beta*vx) (alpha*(negate vy))
+          ParticleState x (y+2*(bWall-y+r)) (be*vx) (al*(negate vy))
         Nothing         -> pS
       where
       (x, y, vx, vy) = getParticleData pS
-      (_, alpha, beta) = getConfigData cG
-      r = (fromIntegral radius) :: Float
+      (al, be) = (alpha cG, beta cG)
+      r = fromIntegral (radius cG) ::Float
+      (lWall, rWall, tWall, bWall) = getWallLocs cG
 
 
 collision :: ParticleState -> ParticleState -> Config -> (ParticleState, ParticleState)
@@ -58,8 +57,8 @@ collision pS1 pS2 cG
   | d >= 2 * r = (pS1, pS2)
   | otherwise = (new1, new2)
   where
-    (_, alpha, beta) = getConfigData cG
-    r = (fromIntegral radius) :: Float
+    (al, be) = (alpha cG, beta cG)
+    r = (fromIntegral (radius cG)) :: Float
     d = sqrt $ (x2-x1)^2 + (y2-y1)^2
     (x1,y1,vx1,vy1) = getParticleData pS1
     (x2,y2,vx2,vy2) = getParticleData pS2
@@ -76,10 +75,10 @@ collision pS1 pS2 cG
     vt1 = mag1 * (sin phi1)
     vn2 = mag2 * (cos phi2)
     vt2 = mag2 * (sin phi2)
-    vt2' = beta * vt2
-    vt1' = beta * vt1
-    vn1' = alpha * vn2
-    vn2' = alpha * vn1
+    vt2' = be * vt2
+    vt1' = be * vt1
+    vn1' = al * vn2
+    vn2' = al * vn1
     mag1' = sqrt $ vn1'^2 + vt1'^2
     mag2' = sqrt $ vn2'^2 + vt2'^2
     phi1' = posAtan2 vt1' vn1'

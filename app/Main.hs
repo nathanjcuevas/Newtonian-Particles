@@ -8,13 +8,8 @@ import Parse
 import Types
 
 
-totalTime ,steps, maxSize :: Int
-totalTime = 60
-steps = totalTime * fps
+maxSize :: Int
 maxSize = 7000000
-
-dt :: Float
-dt = 1 / (fromIntegral fps)
 
 
 extractPosVectors :: [[ParticleState]] -> [[PosVector]]
@@ -46,9 +41,12 @@ main =
       config = extractConfig configContents
       preset = contentsToData contents
       m = length preset
+      steps = (totTime config) * (fps config)
+      dt = 1 / (fromIntegral (fps config))
     if steps * m > maxSize then
       error "exceeded max size"
     else if animate then
-      runAnimation $ extractPosVectors $ computeMatrix preset dt steps config
+      runAnimation (extractPosVectors (computeMatrix preset dt steps config)) config
     else
       print $ compute preset dt steps config
+      where

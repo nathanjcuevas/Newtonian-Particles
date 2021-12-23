@@ -30,35 +30,42 @@ data PosVector = PosVector
 
 
 data Wall = 
-    LeftWall
-  | RightWall
-  | TopWall
+    LeftWall  
+  | RightWall 
+  | TopWall   
   | BottomWall
   deriving Show
 
 
 data Config = Config
-  { g     :: !Float
-  , alpha :: !Float
-  , beta  :: !Float
+  { g       :: !Float
+  , alpha   :: !Float
+  , beta    :: !Float
+  , width   :: !Int
+  , height  :: !Int
+  , radius  :: !Int
+  , fps     :: !Int
+  , totTime :: !Int
   } deriving Show
 
 
 defaultConfig :: Config
 defaultConfig = 
-  Config { g = 9.81, alpha = 0.93, beta = 0.98 }
+  Config 
+    { g       = 9.81
+    , alpha   = 0.93
+    , beta    = 0.93
+    , width   = 740
+    , height  = 740
+    , radius  = 3
+    , fps     = 45
+    , totTime = 60
+    }
 
 
-fps, width, height, radius :: Int
-fps = 45
-width = 740
-height = 740
-radius = 3
-
-
-rightWallLoc, leftWallLoc, topWallLoc, bottomWallLoc :: Float
-rightWallLoc = fromIntegral $ width `div` 2
-leftWallLoc = negate rightWallLoc
-topWallLoc = fromIntegral $ height `div` 2
-bottomWallLoc = negate topWallLoc
-
+getWallLocs :: Config -> (Float, Float, Float, Float)
+getWallLocs c = 
+  (negate rightWallLoc, rightWallLoc, topWallLoc, negate topWallLoc)
+  where 
+    rightWallLoc = fromIntegral $ (width c) `div` 2
+    topWallLoc = fromIntegral $ (height c) `div` 2
