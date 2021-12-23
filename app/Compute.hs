@@ -159,8 +159,8 @@ nextStep dt config currStates step = force $ adjustForWallBounce stepped config
     stepped = map (updateState dt config) postCollisions
 
 
-nextStepChunkedForce_strat :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
-nextStepChunkedForce_strat dt config numChunks currStates step = 
+nextStepChunkedForce :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
+nextStepChunkedForce dt config numChunks currStates step = 
   force $ adjustForWallBounce stepped config
     where
       postCollisions, stepped :: [ParticleState]
@@ -169,8 +169,8 @@ nextStepChunkedForce_strat dt config numChunks currStates step =
       stepped = concat (map (map (updateState dt config)) splitted `using` parList rseq)
 
 
-nextStepChunkedDeep_strat :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
-nextStepChunkedDeep_strat dt config numChunks currStates step = 
+nextStepChunkedDeep :: Float -> Config -> Int -> [ParticleState] -> Int -> [ParticleState]
+nextStepChunkedDeep dt config numChunks currStates step = 
   adjustForWallBounce stepped config
     where
       postCollisions, stepped :: [ParticleState]
@@ -189,7 +189,7 @@ nextStepParCollision dt config numChunks currStates step = force $ adjustForWall
 
 compute :: [ParticleState] -> Float -> Int -> Config -> [ParticleState]
 compute initial dt nSteps config = 
-  foldl (nextStepParCollision dt config 50) initial [1..nSteps]
+  foldl (nextStep dt config) initial [1..nSteps]
 
 
 computeMatrix :: [ParticleState] -> Float -> Int -> Config -> [[ParticleState]]
