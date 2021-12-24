@@ -4,6 +4,10 @@
 
 This project explores simple numerical simulation with a graphics component in Haskell. The simulation consists of *m* particles (of even mass and size) that are enclosed in a rectangular 2-D container. The particles each have an initial position and velocity (call this the "state"), and are free to bounce around the container and each other. Each particle will adhere to basic Newtonian physics and will be influenced by gravitational forces, conservation of energy and conservation of linear momentum, friction and inelastic energy loss. Factors such as spin, angular momentum, aerodynamic drag will not be simulated here. The input of the program will be a csv file of the initial states of each particle, and the program will animate the result over time.
 
+### Gallery
+
+https://user-images.githubusercontent.com/42158119/147361808-7eee414f-deff-4883-8cea-2d2f477437d5.mov
+
 ### How to Run
 
 **building with cabal**
