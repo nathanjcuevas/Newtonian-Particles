@@ -2,12 +2,7 @@
 
 ### Overview
 
-This project explores simple numerical simulation with a graphics component in Haskell. The simulation consists of *m* particles (of even mass and size) that are enclosed in a rectangular 2-D container. The particles each have an initial position and velocity (call this the "state"), and are free to bounce around the container and each other. Each particle will adhere to basic Newtonian physics and will be influenced by gravitational forces, conservation of energy and conservation of linear momentum, friction and inelastic energy loss. Factors such as spin, angular momentum, aerodynamic drag will not be simulated here. The input of the program will be a csv file of the initial states of each particle, and the program will animate the result over time.
-
-### Gallery
-
-**example with 3 particles**
-![particles-three](https://user-images.githubusercontent.com/42158119/147361884-8fa2f984-22cc-45d7-82d1-3ba3057548ba.gif)
+This project explores simple numerical simulation with a graphics component in Haskell. The simulation consists of *m* particles (of even mass and size) that are enclosed in a rectangular 2-D container. The particles each have an initial position and velocity (call this the "state"), and are free to bounce around the container and each other. Each particle will adhere to basic Newtonian physics and will be influenced by gravitational forces, conservation of energy and conservation of linear momentum, friction and inelastic energy loss. Factors such as spin, angular momentum, aerodynamic drag will not be simulated here. The input of the program will be a csv file of the initial states of each particle, and the program will animate the result over time. Check out the [gallery](#gallery) for example runs!
 
 ### How to Run
 
@@ -92,5 +87,11 @@ For a preset example run the following (assuming cabal is installed):
 cabal v2-run Newtonian-Particles -- ./presets/m150.csv ./config/config.csv -animate
 ```
 
+### Gallery
 
+**3 particles**
+https://user-images.githubusercontent.com/42158119/147362390-7544a438-b949-45ed-9e40-97e148d938aa.mov
+
+**250 particles, randomized initial condition:**
+https://user-images.githubusercontent.com/42158119/147362398-2edb9fd1-c4cb-423f-b85b-c76130b29f69.mov
 
