@@ -90,8 +90,10 @@ cabal v2-run Newtonian-Particles -- ./presets/m150.csv ./config/config.csv -anim
 ### Gallery
 
 **3 particles**
+
 https://user-images.githubusercontent.com/42158119/147362390-7544a438-b949-45ed-9e40-97e148d938aa.mov
 
 **250 particles, randomized initial condition:**
+
 https://user-images.githubusercontent.com/42158119/147362398-2edb9fd1-c4cb-423f-b85b-c76130b29f69.mov
 
