@@ -6,7 +6,8 @@ This project explores simple numerical simulation with a graphics component in H
 
 ### Gallery
 
-https://user-images.githubusercontent.com/42158119/147361808-7eee414f-deff-4883-8cea-2d2f477437d5.mov
+**example with 3 particles**
+![particles-three](https://user-images.githubusercontent.com/42158119/147361884-8fa2f984-22cc-45d7-82d1-3ba3057548ba.gif)
 
 ### How to Run
 
